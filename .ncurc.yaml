@@ -2,5 +2,17 @@
 reject: [
   # TODO: v6+ (ref: https://github.com/sindresorhus/get-port/releases/tag/v6.0.0) is an ESM library and thus not compatible with CommonJS. Future story needed to resolve.
   "get-port",
+  # TODO: 14.3.4 resolves json-schema-faker to 0.6.2, which is pure ESM ("type": "module" with no
+  # "require" export condition). The CJS OpenApiMockGenerator in this package then fails to load it
+  # under jest, breaking every suite that uses test/util/mockgen.js. Future story needed to either
+  # migrate the unit tests to ESM or wait for an upstream CJS-compatible release.
+  "@mojaloop/ml-testing-toolkit-shared-lib",
+  # TODO: v7 is a breaking major (ref: https://devblogs.microsoft.com/typescript/typescript-native-port/).
+  # The src -> TypeScript migration (mojaloop/#4488) targets v6; bumping the compiler major should be
+  # its own story once that migration has landed.
+  "typescript",
+  # TODO: v23 is a breaking major of the dev-only dependency-check tool. Future story needed to
+  # verify the new CLI flags still satisfy the `dep:check` / `dep:update` scripts and CI.
+  "npm-check-updates",
 ]
 
