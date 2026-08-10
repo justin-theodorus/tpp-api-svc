@@ -23,13 +23,14 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 'use strict'
 
 import { type Request, type ResponseToolkit } from '@hapi/hapi'
+import { type Context } from 'openapi-backend'
 import { type Span } from '@mojaloop/event-sdk'
 
 type TraceableRequest = Request & { span: Span }
@@ -53,7 +54,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  post: async (context: any, request: TraceableRequest, h: ResponseToolkit) => {
+  post: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consents_post',
       'Post tpp consents request',

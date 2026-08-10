@@ -23,13 +23,14 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 'use strict'
 
 import { type Request, type ResponseToolkit } from '@hapi/hapi'
+import { type Context } from 'openapi-backend'
 import { type Span } from '@mojaloop/event-sdk'
 
 type TraceableRequest = Request & { span: Span }
@@ -53,7 +54,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (context: any, request: TraceableRequest, h: ResponseToolkit) => {
+  get: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_account_requests_get',
       'Get tpp account request by Id',
@@ -87,7 +88,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (context: any, request: TraceableRequest, h: ResponseToolkit) => {
+  put: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_account_requests_put',
       'Put tpp account request by Id',
