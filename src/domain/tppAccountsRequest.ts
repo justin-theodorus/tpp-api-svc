@@ -23,11 +23,13 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 'use strict'
+
+import { type Span } from '@mojaloop/event-sdk'
 
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -43,12 +45,22 @@ const { getStackOrInspect } = require('../lib/util')
 const hubNameRegex = HeaderValidation.getHubNameRegex(Config.HUB_NAME)
 const responseType = Enum.Http.ResponseTypes.JSON
 
+type FspiopHeaders = Record<string, string>
+
+interface TppAccountsRequestParams {
+  ID?: string
+}
+
+interface TppAccountsRequestPayload {
+  accountRequestId?: string
+}
+
 /**
  * Forwards tppAccountsRequests endpoint requests to destination FSP for processing
  *
  * @returns {boolean}
  */
-const forwardTppAccountsRequest = async (path: string, headers: any, method: string, params: any, payload: any, span: any = null) => {
+const forwardTppAccountsRequest = async (path: string, headers: FspiopHeaders, method: string, params: TppAccountsRequestParams, payload: TppAccountsRequestPayload | null, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppAccountsRequest') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]
@@ -105,7 +117,7 @@ const forwardTppAccountsRequest = async (path: string, headers: any, method: str
  *
  * @returns {undefined}
  */
-const forwardTppAccountsRequestError = async (headers: any, to: string, path: string, method: string, accountRequestId: any, payload: any, span: any = null) => {
+const forwardTppAccountsRequestError = async (headers: FspiopHeaders, to: string | undefined, path: string, method: string, accountRequestId: string | undefined, payload: unknown, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppAccountsRequestError') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]

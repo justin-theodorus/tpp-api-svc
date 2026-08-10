@@ -23,11 +23,13 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 'use strict'
+
+import { type Span } from '@mojaloop/event-sdk'
 
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -43,12 +45,23 @@ const { getStackOrInspect } = require('../lib/util')
 const hubNameRegex = HeaderValidation.getHubNameRegex(Config.HUB_NAME)
 const responseType = Enum.Http.ResponseTypes.JSON
 
+type FspiopHeaders = Record<string, string>
+
+interface TppAccountsParams {
+  ID?: string
+  SignedChallenge?: string
+}
+
+interface TppAccountsPayload {
+  accountRequestId?: string
+}
+
 /**
  * Forwards tppAccounts endpoint requests to destination FSP for processing
  *
  * @returns {boolean}
  */
-const forwardTppAccounts = async (path: string, headers: any, method: string, params: any, payload: any, span: any = null) => {
+const forwardTppAccounts = async (path: string, headers: FspiopHeaders, method: string, params: TppAccountsParams, payload: TppAccountsPayload | null, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppAccounts') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]
@@ -102,7 +115,7 @@ const forwardTppAccounts = async (path: string, headers: any, method: string, pa
  *
  * @returns {undefined}
  */
-const forwardTppAccountsError = async (headers: any, to: string, path: string, method: string, accountRequestId: any, payload: any, span: any = null) => {
+const forwardTppAccountsError = async (headers: FspiopHeaders, to: string | undefined, path: string, method: string, accountRequestId: string | undefined, payload: unknown, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppAccountsError') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]

@@ -23,11 +23,13 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 'use strict'
+
+import { type Span } from '@mojaloop/event-sdk'
 
 const Logger = require('@mojaloop/central-services-logger')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -42,12 +44,22 @@ const { getStackOrInspect } = require('../lib/util')
 
 const hubNameRegex = HeaderValidation.getHubNameRegex(Config.HUB_NAME)
 const responseType = Enum.Http.ResponseTypes.JSON
+
+type FspiopHeaders = Record<string, string>
+
+interface TppConsentsParams {
+  ID?: string
+}
+
+interface TppConsentsPayload {
+  consentId?: string
+}
 /**
  * Forwards tppConsents endpoint requests to destination FSP for processing
  *
  * @returns {boolean}
  */
-const forwardTppConsents = async (path: string, headers: any, method: string, params: any, payload: any, span: any = null) => {
+const forwardTppConsents = async (path: string, headers: FspiopHeaders, method: string, params: TppConsentsParams, payload: TppConsentsPayload | null, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppConsents') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]
@@ -99,7 +111,7 @@ const forwardTppConsents = async (path: string, headers: any, method: string, pa
  *
  * @returns {undefined}
  */
-const forwardTppConsentsError = async (headers: any, to: string, path: string, method: string, consentId: any, payload: any, span: any = null) => {
+const forwardTppConsentsError = async (headers: FspiopHeaders, to: string | undefined, path: string, method: string, consentId: string | undefined, payload: unknown, span: Span | null = null) => {
   const childSpan = span ? span.getChild('forwardTppConsentsError') : undefined
   let endpoint
   const source = headers[Enum.Http.Headers.FSPIOP.SOURCE]
