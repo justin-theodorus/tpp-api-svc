@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/

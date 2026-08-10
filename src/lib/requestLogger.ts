@@ -23,28 +23,33 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
 
 'use strict'
 
+import { type Request } from '@hapi/hapi'
+
 const Logger = require('@mojaloop/central-services-logger')
 const Util = require('util')
 
-const logResponse = function (request: any) {
+const logResponse = function (request: Request): void {
   if (request && request.response) {
-    let response
+    // request.response is a ResponseObject once handled; a Boom error carries neither field
+    const source = 'source' in request.response ? request.response.source : undefined
+    const statusCode = 'statusCode' in request.response ? request.response.statusCode : undefined
+    let response: string | undefined
     try {
-      response = JSON.stringify(request.response.source)
+      response = JSON.stringify(source)
     } catch (e) {
-      response = Util.inspect(request.response.source)
+      response = Util.inspect(source)
     }
     if (!response) {
       Logger.info(`TR-Trace - Response: ${request.response}`)
     } else {
-      Logger.info(`TR-Trace - Response: ${response} Status: ${request.response.statusCode}`)
+      Logger.info(`TR-Trace - Response: ${response} Status: ${statusCode}`)
     }
   }
 }

@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
@@ -32,7 +32,18 @@
 
 const RC = require('parse-strings-in-object')(require('rc')('ES', require('../../config/default.json')))
 
-const DEFAULT_PROTOCOL_VERSION = {
+interface ProtocolVersionSetting {
+  DEFAULT: string
+  // rc/env overrides arrive as a JSON-encoded string and are parsed below
+  VALIDATELIST: string[] | string
+}
+
+interface ProtocolVersions {
+  CONTENT: ProtocolVersionSetting
+  ACCEPT: ProtocolVersionSetting
+}
+
+const DEFAULT_PROTOCOL_VERSION: ProtocolVersions = {
   CONTENT: {
     DEFAULT: '1.1',
     VALIDATELIST: [
@@ -52,8 +63,11 @@ const DEFAULT_PROTOCOL_VERSION = {
   }
 }
 
-const getProtocolVersions = (defaultProtocolVersions: any, overrideProtocolVersions: any) => {
-  const T_PROTOCOL_VERSION = {
+const getProtocolVersions = (
+  defaultProtocolVersions: ProtocolVersions,
+  overrideProtocolVersions: Partial<ProtocolVersions> | undefined
+): ProtocolVersions => {
+  const T_PROTOCOL_VERSION: ProtocolVersions = {
     ...defaultProtocolVersions,
     ...overrideProtocolVersions
   }
@@ -71,17 +85,15 @@ const getProtocolVersions = (defaultProtocolVersions: any, overrideProtocolVersi
     }
   }
 
-  if (T_PROTOCOL_VERSION.CONTENT &&
-    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST &&
-    (typeof T_PROTOCOL_VERSION.CONTENT.VALIDATELIST === 'string' ||
-      T_PROTOCOL_VERSION.CONTENT.VALIDATELIST instanceof String)) {
-    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.CONTENT.VALIDATELIST)
+  const contentValidateList: unknown = T_PROTOCOL_VERSION.CONTENT && T_PROTOCOL_VERSION.CONTENT.VALIDATELIST
+  if (contentValidateList &&
+    (typeof contentValidateList === 'string' || contentValidateList instanceof String)) {
+    T_PROTOCOL_VERSION.CONTENT.VALIDATELIST = JSON.parse(contentValidateList.toString()) as string[]
   }
-  if (T_PROTOCOL_VERSION.ACCEPT &&
-    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST &&
-    (typeof T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST === 'string' ||
-      T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST instanceof String)) {
-    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST = JSON.parse(T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST)
+  const acceptValidateList: unknown = T_PROTOCOL_VERSION.ACCEPT && T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST
+  if (acceptValidateList &&
+    (typeof acceptValidateList === 'string' || acceptValidateList instanceof String)) {
+    T_PROTOCOL_VERSION.ACCEPT.VALIDATELIST = JSON.parse(acceptValidateList.toString()) as string[]
   }
   return T_PROTOCOL_VERSION
 }
