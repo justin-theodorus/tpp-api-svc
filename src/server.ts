@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  * Shashikant Hiruagde <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
  ******/
