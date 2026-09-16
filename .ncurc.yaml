@@ -2,5 +2,7 @@
 reject: [
   # TODO: v6+ (ref: https://github.com/sindresorhus/get-port/releases/tag/v6.0.0) is an ESM library and thus not compatible with CommonJS. Future story needed to resolve.
   "get-port",
+  # TODO: held at 5.4.5 (matches mojaloop/typescript-svc-template) because ts-jest's peer is typescript ">=4.3 <7" — no TS7-compatible ts-jest release exists yet. Bump to 7.x once ts-jest supports TypeScript 7.
+  "typescript",
 ]
 

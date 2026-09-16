@@ -23,15 +23,18 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 'use strict'
+
+import type { SinonSandbox } from 'sinon'
 const Sinon = require('sinon')
 const Logger = require('@mojaloop/central-services-logger')
 
 const { logResponse } = require('../../../src/lib/requestLogger')
 
-let sandbox
+let sandbox: SinonSandbox
 describe('requestLogger', () => {
   beforeAll(() => {
     sandbox = Sinon.createSandbox()
@@ -84,7 +87,7 @@ describe('requestLogger', () => {
         }
       }
       // make it circular
-      input.response.source.nested = input
+      ;(input.response.source as Record<string, unknown>).nested = input
 
       // Act
       logResponse(input)
