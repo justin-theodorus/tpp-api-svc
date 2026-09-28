@@ -54,7 +54,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  get: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consents_get',
       'Get tpp consents by Id',
@@ -88,7 +88,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  delete: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  delete: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consents_delete',
       'Delete tpp consents by Id',

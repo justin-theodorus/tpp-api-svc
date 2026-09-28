@@ -23,37 +23,66 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
+
 'use strict'
 
+import type { SinonSandbox } from 'sinon'
+import type { Server } from '@hapi/hapi'
+
 const Sinon = require('sinon')
+const getPort = require('get-port')
+const { initialize } = require('../../../src/server')
+let sandbox: SinonSandbox
 
-const { registerPlugins } = require('../../src/plugins')
+let server: Server
+jest.mock('@mojaloop/central-services-metrics', () => ({
+  setup: jest.fn(),
+  plugin: {
+    name: 'metrics',
+    version: '1.0.0',
+    register: jest.fn()
+  }
+}))
 
-let sandbox
-describe('plugins', () => {
-  beforeAll(() => {
+/**
+ * Tests for /health
+ */
+describe('/health', () => {
+  // URI
+  const path = '/health'
+
+  beforeAll(async () => {
+    server = await initialize(await getPort())
     sandbox = Sinon.createSandbox()
+  })
+
+  afterAll(() => {
+    server.stop()
   })
 
   afterEach(() => {
     sandbox.restore()
   })
 
-  describe('registerPlugins', () => {
-    it('registers the plugins', async () => {
+  describe('GET', () => {
+    // HTTP Method
+    const method = 'get'
+
+    it('returns a 200 response code', async () => {
       // Arrange
-      const serverStub = {
-        register: sandbox.stub()
+      const options = {
+        method,
+        url: path
       }
 
       // Act
-      await registerPlugins(serverStub)
+      const response = await server.inject(options)
 
       // Assert
-      expect(serverStub.register.callCount).toBe(6)
+      expect(response.statusCode).toBe(200)
     })
   })
 })

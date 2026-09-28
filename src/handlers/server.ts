@@ -36,7 +36,7 @@ const Boom = require('@hapi/boom')
 
 const RequestLogger = require('../lib/requestLogger')
 
-async function failActionHandler (request: Request, h: ResponseToolkit, err?: Error) {
+async function failActionHandler (_request: Request, _h: ResponseToolkit, err?: Error) {
   throw Boom.boomify(err)
 }
 

@@ -23,66 +23,50 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
+
 'use strict'
 
-const src = '../../../src/'
+const mockRequestLogger = jest.fn()
+jest.mock('../../../src/lib/requestLogger', () => ({
+  logResponse: mockRequestLogger
+}))
 
-const configImport = `${src}/lib/config`
-jest.mock(configImport)
+const { failActionHandler, onPreHandler } = require('../../../src/handlers/server')
 
-describe('Config tests', () => {
-  beforeEach(() => {
-    jest.resetModules()
-  })
-
+describe('Server Handlers', () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    mockRequestLogger.mockClear()
   })
 
-  it('should load successfully', async () => {
-    // Setup
-    let Config = null
-    let isSuccess
-    // set env var
-    process.env.ES_ENDPOINT_SECURITY__JWS__JWS_SIGN = false
+  describe('failActionHandler', () => {
+    it('throws the reformatted error', async () => {
+      // Arrange
+      const input = new Error('Generic error')
 
-    // Act
-    try {
-      Config = jest.requireActual(configImport)
-      isSuccess = true
-    } catch (e) {
-      isSuccess = false
-    }
+      // Act
+      const action = async () => failActionHandler(null, null, input)
 
-    // Assert
-    expect(Config != null).toBe(true)
-    expect(isSuccess).toBe(true)
+      // Assert
+      await expect(action()).rejects.toThrow('Generic error')
+    })
   })
 
-  it('should parse ENV var ALS_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST as a string', async () => {
-    // Setup
-    let Config = null
-    let isSuccess
-    const validateList = ['1']
-    // set env var
-    process.env.ES_PROTOCOL_VERSIONS__CONTENT__VALIDATELIST = JSON.stringify(validateList)
-    process.env.ES_PROTOCOL_VERSIONS__ACCEPT__VALIDATELIST = JSON.stringify(validateList)
+  describe('onPreHandler', () => {
+    it('logs the response', async () => {
+      // Arrange
+      const request = {}
+      const h = jest.fn().mockImplementation(() => ({
+        continue: jest.fn()
+      }))
 
-    // Act
-    try {
-      Config = jest.requireActual(configImport)
-      isSuccess = true
-    } catch (e) {
-      isSuccess = false
-    }
+      // Act
+      await onPreHandler(request, h)
 
-    // Assert
-    expect(Config != null).toBe(true)
-    expect(isSuccess).toBe(true)
-    expect(Config.PROTOCOL_VERSIONS.CONTENT.VALIDATELIST).toMatchObject(validateList)
-    expect(Config.PROTOCOL_VERSIONS.ACCEPT.VALIDATELIST).toMatchObject(validateList)
+      // Assert
+      expect(mockRequestLogger).toHaveBeenCalled()
+    })
   })
 })

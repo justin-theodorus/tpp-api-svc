@@ -55,7 +55,7 @@ module.exports = {
     * produces: application/json
     * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
     */
-  get: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  get: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_accounts__get',
       'Get tpp accounts by Id',

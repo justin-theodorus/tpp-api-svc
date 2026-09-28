@@ -48,7 +48,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (context: Context, request: Request, h: ResponseToolkit) => {
+  get: async (_context: Context, _request: Request, h: ResponseToolkit) => {
     return h.response(await healthCheck.getHealth()).code(200)
   }
 }

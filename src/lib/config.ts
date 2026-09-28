@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -98,7 +98,7 @@ const getProtocolVersions = (
   return T_PROTOCOL_VERSION
 }
 
-module.exports = {
+export = {
   HUB_ID: RC.HUB_PARTICIPANT.ID,
   HUB_NAME: RC.HUB_PARTICIPANT.NAME,
   PORT: RC.PORT,

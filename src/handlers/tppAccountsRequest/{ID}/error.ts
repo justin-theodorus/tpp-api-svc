@@ -54,7 +54,7 @@ module.exports = {
      * produces: application/json
      * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
      */
-  put: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  put: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_account_request_error_put',
       'Put tpp account Request error by Id',

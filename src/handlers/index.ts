@@ -44,7 +44,7 @@ const tppConsents = require('./tppConsents')
 const tppConsentsId = require('./tppConsents/{ID}')
 const health = require('./health')
 
-module.exports = {
+export = {
   HealthGet: health.get,
   NotifyErrorAccountRequest: tppAccountsRequestErrorByID.put,
   GetAccountRequest: tppAccountsRequestId.get,
