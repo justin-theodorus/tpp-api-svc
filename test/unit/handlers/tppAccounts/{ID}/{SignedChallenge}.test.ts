@@ -29,6 +29,8 @@
 
 'use strict'
 
+import type { SinonSandbox } from 'sinon'
+
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
     info: jest.fn(), // suppress info output
@@ -40,12 +42,12 @@ jest.mock('@mojaloop/central-services-logger', () => {
 const Sinon = require('sinon')
 const Hapi = require('@hapi/hapi')
 
-const Mockgen = require('../../../../util/mockgen.js')
-const Helper = require('../../../../util/helper.js')
+const Mockgen = require('../../../../util/mockgen')
+const Helper = require('../../../../util/helper')
 const Handler = require('../../../../../src/domain/tppAccounts.js')
 const Config = require('../../../../../src/lib/config.js')
 
-let sandbox
+let sandbox: SinonSandbox
 const server = new Hapi.Server()
 
 /**
@@ -66,7 +68,7 @@ describe('/tppAccounts/{ID}/{SignedChallenge}', () => {
   })
 
   beforeEach(() => {
-    Handler.forwardTppAccounts = jest.fn().mockResolvedValue()
+    Handler.forwardTppAccounts = jest.fn().mockResolvedValue(undefined)
   })
 
   afterEach(() => {
