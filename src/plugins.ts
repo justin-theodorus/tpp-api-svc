@@ -115,6 +115,6 @@ const registerPlugins = async (server: Server, openAPIBackend: OpenAPIBackend) =
   await server.register([Inert, Vision, Blipp, ErrorHandling, EventPlugin, MetricsPlugin])
 }
 
-module.exports = {
+export = {
   registerPlugins
 }
