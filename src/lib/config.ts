@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  * Rajiv Mothilal <rajiv.mothilal@modusbox.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/

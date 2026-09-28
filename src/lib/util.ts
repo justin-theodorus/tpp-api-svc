@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -35,7 +35,7 @@ const Enum = require('@mojaloop/central-services-shared').Enum
 interface SpanTags {
   operationType: string
   operationAction: string
-  accountRequestId: string | undefined
+  accountRequestId?: string | undefined
   source?: string
   destination?: string
 }
