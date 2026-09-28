@@ -98,7 +98,7 @@ const getProtocolVersions = (
   return T_PROTOCOL_VERSION
 }
 
-module.exports = {
+export = {
   HUB_ID: RC.HUB_PARTICIPANT.ID,
   HUB_NAME: RC.HUB_PARTICIPANT.NAME,
   PORT: RC.PORT,

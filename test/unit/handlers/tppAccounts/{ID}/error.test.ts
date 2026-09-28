@@ -22,7 +22,7 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
 
- - Devarsh Shah <devarshshah2608@gmail.com>
+ - Shashikant Hirugade <shashi.mojaloop@gmail.com>
  - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
 
  --------------
@@ -30,9 +30,11 @@
 
 'use strict'
 
+import type { SinonSandbox } from 'sinon'
+
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
-    info: jest.fn(),
+    info: jest.fn(), // suppress info output
     debug: jest.fn(),
     error: jest.fn()
   }
@@ -41,29 +43,27 @@ jest.mock('@mojaloop/central-services-logger', () => {
 const Sinon = require('sinon')
 const Hapi = require('@hapi/hapi')
 
-const Mockgen = require('../../util/mockgen.js')
-const Helper = require('../../util/helper.js')
-const Handler = require('../../../src/domain/tppConsents')
-const Config = require('../../../src/lib/config.ts')
+const Mockgen = require('../../../../util/mockgen')
+const Helper = require('../../../../util/helper')
+const Handler = require('../../../../../src/domain/tppAccounts.js')
+const Config = require('../../../../../src/lib/config.ts')
 
-let sandbox
+let sandbox: SinonSandbox
 const server = new Hapi.Server()
 
-/**
- * Tests for /tppConsents
- */
-describe('/tppConsents', () => {
+describe('/tppAccounts/{ID}/error', () => {
   // URI
-  const resource = 'tppConsents'
-  const path = `/${resource}`
+  const resource = 'tppAccounts'
+  const path = `/${resource}/{ID}/error`
 
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
+    // sandbox.stub(Handler, 'forwardTppAccountsError').returns(Promise.resolve())
     await Helper.serverSetup(server)
   })
 
   beforeEach(() => {
-    Handler.forwardTppConsents = jest.fn().mockResolvedValue()
+    Handler.forwardTppAccountsError = jest.fn().mockResolvedValue(undefined)
   })
 
   afterAll(() => {
@@ -74,31 +74,14 @@ describe('/tppConsents', () => {
     sandbox.restore()
   })
 
-  describe('POST', () => {
+  describe('PUT', () => {
     // HTTP Method
-    const method = 'post'
-    // Override request refs because OpenApiRequestGenerator is unable to generate unicode test data
-    const overrideReq = {
-      request: [
-        {
-          id: 'callbackUri',
-          type: 'string',
-          format: 'uri',
-          const: 'http://localhost:3000/callback'
-        },
-        {
-          id: 'partyItentifier',
-          type: 'string',
-          const: '16135551212'
-        }
-      ]
-    }
+    const method = 'put'
 
-    it('returns a 202 response code', async () => {
-      // Generate request
-      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS, overrideReq)
+    it('handles a PUT', async () => {
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
 
-      // Setup request opts
+      // Arrange
       const options = {
         method,
         url: path,
@@ -110,14 +93,13 @@ describe('/tppConsents', () => {
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(202)
+      expect(response.statusCode).toBe(200)
     })
 
-    it('handles when forwardTppConsents throws error', async () => {
-      // Generate request
-      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS, overrideReq)
+    it('handles when error is thrown', async () => {
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
 
-      // Setup request opts
+      // Arrange
       const options = {
         method,
         url: path,
@@ -126,15 +108,15 @@ describe('/tppConsents', () => {
       }
 
       const err = new Error('Error occurred')
-      Handler.forwardTppConsents.mockImplementation(async () => { throw err })
+      Handler.forwardTppAccountsError.mockImplementation(async () => { throw err })
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(202)
-      expect(Handler.forwardTppConsents).toHaveBeenCalledTimes(1)
-      expect(Handler.forwardTppConsents.mock.results[0].value).rejects.toThrow(err)
+      expect(response.statusCode).toBe(200)
+      expect(Handler.forwardTppAccountsError).toHaveBeenCalledTimes(1)
+      expect(Handler.forwardTppAccountsError.mock.results[0].value).rejects.toThrow(err)
     })
   })
 })
