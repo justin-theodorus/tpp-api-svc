@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -47,10 +47,12 @@ const responseType = Enum.Http.ResponseTypes.JSON
 
 type FspiopHeaders = Record<string, string>
 
+// TODO: replace with types generated from the API spec (.d.ts) once @mojaloop/api-snippets can be used here
 interface TppConsentsParams {
   ID?: string
 }
 
+// TODO: replace with types generated from the API spec (.d.ts) once @mojaloop/api-snippets can be used here
 interface TppConsentsPayload {
   consentId?: string
 }
