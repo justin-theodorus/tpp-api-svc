@@ -24,50 +24,91 @@
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
 
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 
 'use strict'
-const { OpenApiMockGenerator } = require('@mojaloop/ml-testing-toolkit-shared-lib')
+
+// @mojaloop/ml-testing-toolkit-shared-lib ships no type declarations, so it is
+// require()'d (same pattern as event-sdk in helper.ts) and cast to the local
+// OpenApiMockGen interface declared below.
+// TODO: restore a plain typed import once the package publishes its own types.
+const { OpenApiMockGenerator } = require('@mojaloop/ml-testing-toolkit-shared-lib') as {
+  OpenApiMockGenerator: new () => OpenApiMockGen
+};
+import { type ProtocolVersions } from './types';
+
+/**
+ * A json-schema-faker reference override. Always carries an `id`; the remaining
+ * keys are arbitrary JSON-schema / jsf keywords (type, format, const, ...), so
+ * the shape is intentionally open.
+ */
+interface JsfRef {
+  id: string
+  [key: string]: unknown
+}
+
+/** Per-request overrides accepted by generateRequest. */
+interface RequestOverride {
+  headers?: JsfRef[] | null
+  request?: JsfRef[] | null
+}
+
+/**
+ * The part of ml-testing-toolkit-shared-lib's OpenApiMockGenerator that these
+ * utils use. The package ships no type declarations, so this mirrors the five
+ * methods we call, taken from its implementation in
+ * node_modules/@mojaloop/ml-testing-toolkit-shared-lib/src/lib/openApiMockGenerator.js
+ */
+interface OpenApiMockGen {
+  load: (schemaPath: string) => Promise<void>
+  generateRequestHeaders: (path: string, httpMethod: string, jsfRefs?: JsfRef[]) => Promise<Record<string, string>>
+  generateRequestBody: (path: string, httpMethod: string, jsfRefs?: JsfRef[]) => Promise<Record<string, unknown>>
+  generateRequestQueryParams: (path: string, httpMethod: string, jsfRefs?: JsfRef[]) => Promise<Record<string, unknown>>
+  generateRequestPathParams: (path: string, httpMethod: string, jsfRefs?: JsfRef[]) => Promise<Record<string, unknown>>
+}
 
 /**
  * Mock Span
  */
 class Span {
+  isFinished: boolean;
+
   constructor () {
-    this.isFinished = false
+    this.isFinished = false;
   }
 
   audit () {
-    return jest.fn()
+    return jest.fn();
   }
 
   error () {
-    return jest.fn()
+    return jest.fn();
   }
 
   finish () {
-    return jest.fn()
+    return jest.fn();
   }
 
   debug () {
-    return jest.fn()
+    return jest.fn();
   }
 
   info () {
-    return jest.fn()
+    return jest.fn();
   }
 
   getChild () {
-    return new Span()
+    return new Span();
   }
 }
 
 const mockSpan = () => {
-  return new Span()
+  return new Span();
 }
 
-let openApiMockGenerator
+let openApiMockGenerator: OpenApiMockGen | undefined;
 
 // Factory generator for OpenApiRequestGenerator singleton
 const init = async () => {
@@ -78,7 +119,22 @@ const init = async () => {
   return openApiMockGenerator
 }
 
-const generateRequestHeaders = async (path, httpMethod, resource, protocolVersions, overrideRefs = null) => {
+/**
+ * NOTE: `_overrideRefs` is accepted but deliberately unused. This function builds its
+ * own jsfRefs (Content-Type / Accept / Date) below and passes those to the generator,
+ * so caller-supplied header overrides are NOT plumbed through. This mirrors the
+ * pre-migration JavaScript behaviour and no caller passes header overrides today —
+ * every generateRequest call site supplies only `request` refs.
+ * TODO: either wire it through to the generator or drop it from this signature and
+ * from the generateRequest call site.
+ */
+const generateRequestHeaders = async (
+  path: string,
+  httpMethod: string,
+  resource: string,
+  protocolVersions: ProtocolVersions,
+  _overrideRefs: JsfRef[] | null = null
+) => {
   const generator = await init()
   // Default header override refs
   const jsfRefs = [
@@ -104,32 +160,34 @@ const generateRequestHeaders = async (path, httpMethod, resource, protocolVersio
   return headers
 }
 
-const generateRequestBody = async (path, httpMethod, overrideRefs = null) => {
+const generateRequestBody = async (
+  path: string,
+  httpMethod: string,
+  overrideRefs: JsfRef[] | null = null
+) => {
   const generator = await init()
 
-  let localOverrideRefs
-  if (overrideRefs == null) {
-    localOverrideRefs = []
-  } else {
-    localOverrideRefs = [...overrideRefs]
-  }
+  const localOverrideRefs: JsfRef[] = overrideRefs == null ? [] : [...overrideRefs]
   const body = await generator.generateRequestBody(path, httpMethod, localOverrideRefs)
   return body
 }
 
-const generateRequestQueryParams = async (path, httpMethod, overrideRefs = null) => {
+const generateRequestQueryParams = async (
+  path: string,
+  httpMethod: string,
+  overrideRefs: JsfRef[] | null = null
+) => {
   const generator = await init()
 
-  let localOverrideRefs
-  if (overrideRefs == null) {
-    localOverrideRefs = []
-  } else {
-    localOverrideRefs = [...overrideRefs]
-  }
+  const localOverrideRefs: JsfRef[] = overrideRefs == null ? [] : [...overrideRefs]
 
   const params = await generator.generateRequestQueryParams(path, httpMethod, localOverrideRefs)
 
-  const result = {
+  const result: {
+    params: typeof params
+    toString: () => string
+    toURLEncodedString: () => string
+  } = {
     params,
     toString: () => {
       return Object.entries(result.params).reduce((acc, [k, v]) => {
@@ -147,19 +205,22 @@ const generateRequestQueryParams = async (path, httpMethod, overrideRefs = null)
   return result
 }
 
-const generateRequestPathParams = async (path, httpMethod, overrideRefs = null) => {
+const generateRequestPathParams = async (
+  path: string,
+  httpMethod: string,
+  overrideRefs: JsfRef[] | null = null
+) => {
   const generator = await init()
 
-  let localOverrideRefs
-  if (overrideRefs == null) {
-    localOverrideRefs = []
-  } else {
-    localOverrideRefs = [...overrideRefs]
-  }
+  const localOverrideRefs: JsfRef[] = overrideRefs == null ? [] : [...overrideRefs]
 
   const params = await generator.generateRequestPathParams(path, httpMethod, localOverrideRefs)
 
-  const result = {
+  const result: {
+    params: typeof params
+    toString: () => string
+    toURLEncodedString: () => string
+  } = {
     params,
     toString: () => {
       return Object.entries(result.params).reduce((acc, [k, v]) => {
@@ -177,8 +238,14 @@ const generateRequestPathParams = async (path, httpMethod, overrideRefs = null) 
   return result
 }
 
-const generateRequest = async (path, httpMethod, resource, protocolVersions, override = null) => {
-  const localOverride = {
+const generateRequest = async (
+  path: string,
+  httpMethod: string,
+  resource: string,
+  protocolVersions: ProtocolVersions,
+  override: RequestOverride | null = null
+) => {
+  const localOverride: { headers: JsfRef[] | null; request: JsfRef[] | null } = {
     headers: null,
     request: null
   }
@@ -193,10 +260,9 @@ const generateRequest = async (path, httpMethod, resource, protocolVersions, ove
   }
   const headers = await generateRequestHeaders(path, httpMethod, resource, protocolVersions, localOverride.headers)
 
-  let body
-  if (httpMethod.toLowerCase() !== 'get') {
-    body = await generateRequestBody(path, httpMethod, localOverride.request)
-  }
+  const body = httpMethod.toLowerCase() !== 'get'
+    ? await generateRequestBody(path, httpMethod, localOverride.request)
+    : undefined
 
   const query = await generateRequestQueryParams(path, httpMethod, localOverride.request)
 

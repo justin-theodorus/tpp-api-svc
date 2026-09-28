@@ -22,13 +22,14 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
 
- - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
-
+ - Shashikant Hirugade <shashi.mojaloop@gmail.com>
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 
 'use strict'
+
+import type { SinonSandbox } from 'sinon'
 
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
@@ -41,143 +42,102 @@ jest.mock('@mojaloop/central-services-logger', () => {
 const Sinon = require('sinon')
 const Hapi = require('@hapi/hapi')
 
-const Mockgen = require('../../../util/mockgen.js')
-const Helper = require('../../../util/helper.js')
-const Handler = require('../../../../src/domain/tppConsents')
-const Config = require('../../../../src/lib/config.ts')
+const Mockgen = require('../../../../util/mockgen')
+const Helper = require('../../../../util/helper')
+const Handler = require('../../../../../src/domain/tppConsentRequests')
+const Config = require('../../../../../src/lib/config')
 
-let sandbox
+let sandbox: SinonSandbox
 const server = new Hapi.Server()
 
-/**
- * Tests for /tppConsents/{ID}
- */
-describe('/tppConsents/{ID}', () => {
+describe('/tppConsentRequests/{ID}/error', () => {
   // URI
-  const resource = 'tppConsents'
-  const path = `/${resource}/{ID}`
+  const resource = 'tppConsentRequests'
+  const path = `/${resource}/{ID}/error`
 
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
+    // sandbox.stub(Handler, 'forwardTppConsentRequestsError').returns(Promise.resolve())
     await Helper.serverSetup(server)
+  })
+
+  beforeEach(() => {
+    Handler.forwardTppConsentRequestsError = jest.fn().mockResolvedValue(undefined)
   })
 
   afterAll(() => {
     server.stop()
   })
 
-  beforeEach(() => {
-    Handler.forwardTppConsents = jest.fn().mockResolvedValue()
-  })
-
   afterEach(() => {
     sandbox.restore()
   })
 
-  describe('GET', () => {
+  describe('PUT', () => {
     // HTTP Method
-    const method = 'get'
+    const method = 'put'
 
-    it('returns a 202 response code', async () => {
-      const headers = await Mockgen.generateRequestHeaders(path, method, resource, Config.PROTOCOL_VERSIONS)
+    it('handles a PUT', async () => {
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
+
       // Arrange
       const options = {
         method,
         url: path,
-        headers
+        headers: request.headers,
+        payload: request.body
       }
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(202)
+      expect(response.statusCode).toBe(200)
     })
 
     it('handles when error is thrown', async () => {
-      const headers = await Mockgen.generateRequestHeaders(path, method, resource, Config.PROTOCOL_VERSIONS)
-      // Arrange
-      const options = {
-        method,
-        url: path,
-        headers
-      }
-      const err = new Error('Error occurred')
-      Handler.forwardTppConsents.mockImplementation(async () => { throw err })
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(Handler.forwardTppConsents).toHaveBeenCalledTimes(1)
-      expect(Handler.forwardTppConsents.mock.results[0].value).rejects.toThrow(err)
-      expect(response.statusCode).toBe(202)
-    })
-  })
-
-  describe('DELETE', () => {
-    // HTTP Method
-    const method = 'delete'
-
-    it('returns a 202 response code', async () => {
-      const headers = await Mockgen.generateRequestHeaders(path, method, resource, Config.PROTOCOL_VERSIONS)
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
 
       // Arrange
       const options = {
         method,
         url: path,
-        headers
-      }
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(202)
-    })
-
-    it('handles when error is thrown', async () => {
-      const headers = await Mockgen.generateRequestHeaders(path, method, resource, Config.PROTOCOL_VERSIONS)
-
-      // Arrange
-      const options = {
-        method,
-        url: path,
-        headers
+        headers: request.headers,
+        payload: request.body
       }
 
       const err = new Error('Error occurred')
-      Handler.forwardTppConsents.mockImplementation(async () => { throw err })
+      Handler.forwardTppConsentRequestsError.mockImplementation(async () => { throw err })
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(202)
-      expect(Handler.forwardTppConsents).toHaveBeenCalledTimes(1)
-      expect(Handler.forwardTppConsents.mock.results[0].value).rejects.toThrow(err)
+      expect(response.statusCode).toBe(200)
+      expect(Handler.forwardTppConsentRequestsError).toHaveBeenCalledTimes(1)
+      expect(Handler.forwardTppConsentRequestsError.mock.results[0].value).rejects.toThrow(err)
     })
+
     it('returns an error response and logs when getSpanTags throws', async () => {
-      const LibUtil = require('../../../../src/lib/util')
+      const LibUtil = require('../../../../../src/lib/util')
       const spy = jest.spyOn(LibUtil, 'getSpanTags').mockImplementation(() => {
         throw new Error('forced getSpanTags error')
       })
 
-      const headers = await Mockgen.generateRequestHeaders(path, method, resource, Config.PROTOCOL_VERSIONS)
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
 
       const options = {
         method,
         url: path,
-        headers
+        headers: request.headers,
+        payload: request.body
       }
 
       const response = await server.inject(options)
 
-      // The handler re-formats and re-throws as an FSPIOP error; assert non-200 and that we logged the error
       expect(response.statusCode).not.toBe(200)
       expect(require('@mojaloop/central-services-logger').error).toHaveBeenCalled()
 
-      // cleanup
       spy.mockRestore()
     })
   })
