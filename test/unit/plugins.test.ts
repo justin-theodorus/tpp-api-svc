@@ -23,50 +23,39 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
-
 'use strict'
 
-const mockRequestLogger = jest.fn()
-jest.mock('../../../src/lib/requestLogger', () => ({
-  logResponse: mockRequestLogger
-}))
+import type { SinonSandbox } from 'sinon'
 
-const { failActionHandler, onPreHandler } = require('../../../src/handlers/server')
+const Sinon = require('sinon')
 
-describe('Server Handlers', () => {
+const { registerPlugins } = require('../../src/plugins')
+
+let sandbox: SinonSandbox
+describe('plugins', () => {
+  beforeAll(() => {
+    sandbox = Sinon.createSandbox()
+  })
+
   afterEach(() => {
-    mockRequestLogger.mockClear()
+    sandbox.restore()
   })
 
-  describe('failActionHandler', () => {
-    it('throws the reformatted error', async () => {
+  describe('registerPlugins', () => {
+    it('registers the plugins', async () => {
       // Arrange
-      const input = new Error('Generic error')
+      const serverStub = {
+        register: sandbox.stub()
+      }
 
       // Act
-      const action = async () => failActionHandler(null, null, input)
+      await registerPlugins(serverStub)
 
       // Assert
-      await expect(action()).rejects.toThrow('Generic error')
-    })
-  })
-
-  describe('onPreHandler', () => {
-    it('logs the response', async () => {
-      // Arrange
-      const request = {}
-      const h = jest.fn().mockImplementation(() => ({
-        continue: jest.fn()
-      }))
-
-      // Act
-      await onPreHandler(request, h)
-
-      // Assert
-      expect(mockRequestLogger).toHaveBeenCalled()
+      expect(serverStub.register.callCount).toBe(6)
     })
   })
 })

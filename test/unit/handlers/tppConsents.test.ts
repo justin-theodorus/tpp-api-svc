@@ -22,16 +22,19 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
 
- - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Devarsh Shah <devarshshah2608@gmail.com>
+ - Ernest Tan <ernesttanjianyu@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com>
  --------------
  ******/
 
 'use strict'
 
+import type { SinonSandbox } from 'sinon'
+
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
-    info: jest.fn(), // suppress info output
+    info: jest.fn(),
     debug: jest.fn(),
     error: jest.fn()
   }
@@ -40,27 +43,29 @@ jest.mock('@mojaloop/central-services-logger', () => {
 const Sinon = require('sinon')
 const Hapi = require('@hapi/hapi')
 
-const Mockgen = require('../../../../util/mockgen.js')
-const Helper = require('../../../../util/helper')
-const Handler = require('../../../../../src/domain/tppAccountsRequest')
-const Config = require('../../../../../src/lib/config')
+const Mockgen = require('../../util/mockgen')
+const Helper = require('../../util/helper')
+const Handler = require('../../../src/domain/tppConsents')
+const Config = require('../../../src/lib/config.ts')
 
-let sandbox
+let sandbox: SinonSandbox
 const server = new Hapi.Server()
 
-describe('/tppAccountsRequest/{ID}/error', () => {
+/**
+ * Tests for /tppConsents
+ */
+describe('/tppConsents', () => {
   // URI
-  const resource = 'tppAccountsRequest'
-  const path = `/${resource}/{ID}/error`
+  const resource = 'tppConsents'
+  const path = `/${resource}`
 
   beforeAll(async () => {
     sandbox = Sinon.createSandbox()
-    // sandbox.stub(Handler, 'forwardTppAccountsRequestError').returns(Promise.resolve())
     await Helper.serverSetup(server)
   })
 
   beforeEach(() => {
-    Handler.forwardTppAccountsRequestError = jest.fn().mockResolvedValue()
+    Handler.forwardTppConsents = jest.fn().mockResolvedValue(undefined)
   })
 
   afterAll(() => {
@@ -71,14 +76,31 @@ describe('/tppAccountsRequest/{ID}/error', () => {
     sandbox.restore()
   })
 
-  describe('PUT', () => {
+  describe('POST', () => {
     // HTTP Method
-    const method = 'put'
+    const method = 'post'
+    // Override request refs because OpenApiRequestGenerator is unable to generate unicode test data
+    const overrideReq = {
+      request: [
+        {
+          id: 'callbackUri',
+          type: 'string',
+          format: 'uri',
+          const: 'http://localhost:3000/callback'
+        },
+        {
+          id: 'partyItentifier',
+          type: 'string',
+          const: '16135551212'
+        }
+      ]
+    }
 
-    it('handles a PUT', async () => {
-      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
+    it('returns a 202 response code', async () => {
+      // Generate request
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS, overrideReq)
 
-      // Arrange
+      // Setup request opts
       const options = {
         method,
         url: path,
@@ -90,13 +112,14 @@ describe('/tppAccountsRequest/{ID}/error', () => {
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(202)
     })
 
-    it('handles when error is thrown', async () => {
-      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS)
+    it('handles when forwardTppConsents throws error', async () => {
+      // Generate request
+      const request = await Mockgen.generateRequest(path, method, resource, Config.PROTOCOL_VERSIONS, overrideReq)
 
-      // Arrange
+      // Setup request opts
       const options = {
         method,
         url: path,
@@ -105,15 +128,15 @@ describe('/tppAccountsRequest/{ID}/error', () => {
       }
 
       const err = new Error('Error occurred')
-      Handler.forwardTppAccountsRequestError.mockImplementation(async () => { throw err })
+      Handler.forwardTppConsents.mockImplementation(async () => { throw err })
 
       // Act
       const response = await server.inject(options)
 
       // Assert
-      expect(response.statusCode).toBe(200)
-      expect(Handler.forwardTppAccountsRequestError).toHaveBeenCalledTimes(1)
-      expect(Handler.forwardTppAccountsRequestError.mock.results[0].value).rejects.toThrow(err)
+      expect(response.statusCode).toBe(202)
+      expect(Handler.forwardTppConsents).toHaveBeenCalledTimes(1)
+      expect(Handler.forwardTppConsents.mock.results[0].value).rejects.toThrow(err)
     })
   })
 })

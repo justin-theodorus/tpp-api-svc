@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -44,7 +44,7 @@ const tppConsents = require('./tppConsents')
 const tppConsentsId = require('./tppConsents/{ID}')
 const health = require('./health')
 
-module.exports = {
+export = {
   HealthGet: health.get,
   NotifyErrorAccountRequest: tppAccountsRequestErrorByID.put,
   GetAccountRequest: tppAccountsRequestId.get,

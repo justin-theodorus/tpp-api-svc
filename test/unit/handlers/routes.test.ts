@@ -23,21 +23,34 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 
 'use strict'
 
-const Argv = require('../../../src/lib/argv')
+const mockHandleRequest = jest.fn()
+const mockApi = { handleRequest: mockHandleRequest }
 
-describe('Argv', () => {
-  it('getArgs returns the args', async () => {
-    // Arrange
-    // Act
-    const result = Argv.getArgs()
+const { APIRoutes } = require('../../../src/handlers/routes')
 
-    // Assert
-    expect(result.length > 0).toBe(true)
+describe('Routes', () => {
+  describe('APIRoutes', () => {
+    it('returns all API routes', async () => {
+      // Arrange
+      const routes = APIRoutes(mockApi)
+
+      // Assert
+      await expect(routes.length > 0).toBe(true)
+
+      // Act/Assert
+      routes.forEach((route: { handler: (...args: unknown[]) => unknown }) => {
+        mockHandleRequest.mockClear()
+        // Act
+        route.handler({}, {})
+        // Assert
+        expect(mockHandleRequest).toHaveBeenCalled()
+      })
+    })
   })
 })

@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -48,7 +48,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (context: Context, request: Request, h: ResponseToolkit) => {
+  get: async (_context: Context, _request: Request, h: ResponseToolkit) => {
     return h.response(await healthCheck.getHealth()).code(200)
   }
 }

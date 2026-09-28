@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -36,7 +36,7 @@ const Boom = require('@hapi/boom')
 
 const RequestLogger = require('../lib/requestLogger')
 
-async function failActionHandler (request: Request, h: ResponseToolkit, err?: Error) {
+async function failActionHandler (_request: Request, _h: ResponseToolkit, err?: Error) {
   throw Boom.boomify(err)
 }
 

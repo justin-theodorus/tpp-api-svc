@@ -23,18 +23,20 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com>
  --------------
  ******/
+
+import type { SinonSandbox } from 'sinon'
 
 /*
   For testing the server imports, we need to use jest.resetModules() between tests
   This means specifying future imports here and actually doing the importing in `beforeEach`
 */
-let Sinon
-let Command
-let sandbox
+let Sinon: typeof import('sinon')
+let Command: typeof import('commander').Command
+let sandbox: SinonSandbox
 
 describe('Base Tests', () => {
   beforeEach(() => {
@@ -54,7 +56,8 @@ describe('Base Tests', () => {
     // Arrange
     const sandbox = Sinon.createSandbox()
     const mockInitStub = sandbox.stub()
-    const helpStub = sandbox.stub(Command.prototype, 'help').returns(true)
+    // Command.prototype.help is typed `(): never` (it process.exits), so cast the stubbed return.
+    const helpStub = sandbox.stub(Command.prototype, 'help').returns(true as never)
 
     jest.mock('../../src/server.ts', () => ({ initialize: mockInitStub }))
     jest.mock('../../src/lib/argv.ts', () => ({

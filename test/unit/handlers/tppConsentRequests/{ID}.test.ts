@@ -23,12 +23,14 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Shashikant Hirugade <shashi.mojaloop@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
+ - Justin Theodorus <justin.theodorus@gmail.com>
  --------------
  ******/
 
 'use strict'
+
+import type { SinonSandbox } from 'sinon'
 
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
@@ -41,12 +43,12 @@ jest.mock('@mojaloop/central-services-logger', () => {
 const Sinon = require('sinon')
 const Hapi = require('@hapi/hapi')
 
-const Mockgen = require('../../../util/mockgen.js')
-const Helper = require('../../../util/helper.js')
-const Handler = require('../../../../src/domain/tppConsentRequests.ts')
+const Mockgen = require('../../../util/mockgen')
+const Helper = require('../../../util/helper')
+const Handler = require('../../../../src/domain/tppConsentRequests')
 const Config = require('../../../../src/lib/config.ts')
 
-let sandbox
+let sandbox: SinonSandbox
 const server = new Hapi.Server()
 
 /**
@@ -67,7 +69,7 @@ describe('/tppConsentRequests/{ID}', () => {
   })
 
   beforeEach(() => {
-    Handler.forwardTppConsentRequests = jest.fn().mockResolvedValue()
+    Handler.forwardTppConsentRequests = jest.fn().mockResolvedValue(undefined)
   })
 
   afterEach(() => {

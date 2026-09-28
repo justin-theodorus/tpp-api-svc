@@ -22,64 +22,29 @@
  * Mojaloop Foundation
  - Name Surname <name.surname@mojaloop.io>
 
- - Shashikant Hirugade <shashi.mojaloop@gmail.com>
-
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 
 'use strict'
 
-const Sinon = require('sinon')
-const getPort = require('get-port')
-const { initialize } = require('../../../src/server')
-let sandbox
-
-let server
-jest.mock('@mojaloop/central-services-metrics', () => ({
-  setup: jest.fn(),
-  plugin: {
-    name: 'metrics',
-    version: '1.0.0',
-    register: jest.fn()
-  }
-}))
+/**
+ * Shared types for the test utilities.
+ */
 
 /**
- * Tests for /health
+ * One section (CONTENT or ACCEPT) of the protocol-version config.
+ * Shape mirrors config/default.json. We don't derive this from src/lib/config
+ * because it processes the config through untyped libs (rc, parse-strings-in-object),
+ * so TS infers `any` there. Typing here keeps the test utils type-safe and stays
+ * within the test-migration scope (no src/ changes).
  */
-describe('/health', () => {
-  // URI
-  const path = '/health'
+export interface ProtocolVersionSection {
+  DEFAULT: string
+  VALIDATELIST: string[]
+}
 
-  beforeAll(async () => {
-    server = await initialize(await getPort())
-    sandbox = Sinon.createSandbox()
-  })
-
-  afterAll(() => {
-    server.stop()
-  })
-
-  afterEach(() => {
-    sandbox.restore()
-  })
-
-  describe('GET', () => {
-    // HTTP Method
-    const method = 'get'
-
-    it('returns a 200 response code', async () => {
-      // Arrange
-      const options = {
-        method,
-        url: path
-      }
-
-      // Act
-      const response = await server.inject(options)
-
-      // Assert
-      expect(response.statusCode).toBe(200)
-    })
-  })
-})
+export interface ProtocolVersions {
+  CONTENT: ProtocolVersionSection
+  ACCEPT: ProtocolVersionSection
+}

@@ -23,10 +23,13 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
+ - Ernest Tan <ernesttanjianyu@gmail.com>
  --------------
  ******/
 
 'use strict'
+
+import type { SinonSandbox } from 'sinon'
 
 jest.mock('@mojaloop/central-services-logger', () => {
   return {
@@ -40,17 +43,17 @@ const Endpoint = require('@mojaloop/central-services-shared').Util.Endpoints
 const Request = require('@mojaloop/central-services-shared').Util.Request
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
 
-const TppConsents = require('../../../src/domain/tppConsents')
+const TppConsentRequests = require('../../../src/domain/tppConsentRequests')
 const TestHelper = require('../../util/helper')
 const MockSpan = require('../../util/mockgen').mockSpan
 const Config = require('../../../src/lib/config')
 
-let sandbox
+let sandbox: SinonSandbox
 let SpanMock = MockSpan()
 
-describe('tppConsents', () => {
+describe('tppConsentRequests', () => {
   // URI
-  const resource = 'tppConsents'
+  const resource = 'tppConsentRequests'
 
   beforeAll(() => {
     sandbox = Sinon.createSandbox()
@@ -61,7 +64,7 @@ describe('tppConsents', () => {
     SpanMock = MockSpan()
   })
 
-  describe('forwardTppConsents', () => {
+  describe('forwardTppConsentRequests', () => {
     it('forwards a POST request when the payload is undefined', async () => {
       // Arrange
       sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
@@ -71,7 +74,7 @@ describe('tppConsents', () => {
         statusText: 'Accepted'
       })
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_POST,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_POST,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'post',
         { ID: '12345' },
@@ -80,7 +83,79 @@ describe('tppConsents', () => {
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsents(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it('forwards a PUT request', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
+      sandbox.stub(Request, 'sendRequest').resolves({
+        ok: true,
+        status: 200,
+        statusText: 'OK'
+      })
+      const options = [
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT,
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        'put',
+        { ID: '12345' },
+        { consentRequestId: '12345', authChannels: ['WEB'] },
+        SpanMock
+      ]
+
+      // Act
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it('forwards a PATCH request', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
+      sandbox.stub(Request, 'sendRequest').resolves({
+        ok: true,
+        status: 202,
+        statusText: 'Accepted'
+      })
+      const options = [
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PATCH,
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        'patch',
+        { ID: '12345' },
+        { authToken: 'token123' },
+        SpanMock
+      ]
+
+      // Act
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it('forwards a GET request', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
+      sandbox.stub(Request, 'sendRequest').resolves({
+        ok: true,
+        status: 202,
+        statusText: 'Accepted'
+      })
+      const options = [
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_GET,
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        'get',
+        { ID: '12345' },
+        null,
+        SpanMock
+      ]
+
+      // Act
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
       expect(result).toBe(true)
@@ -89,26 +164,26 @@ describe('tppConsents', () => {
     it('handles when the endpoint could not be found', async () => {
       // Arrange
       sandbox.stub(Endpoint, 'getEndpoint').resolves(undefined)
-      sandbox.stub(TppConsents, 'forwardTppConsentsError').resolves({})
+      sandbox.stub(TppConsentRequests, 'forwardTppConsentRequestsError').resolves({})
       sandbox.stub(Request, 'sendRequest').resolves({
         ok: true,
         status: 202,
         statusText: 'Accepted'
       })
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_POST,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_POST,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'post',
         { ID: '12345' },
-        { consentId: '12345' },
+        { consentRequestId: '12345' },
         SpanMock
       ]
 
       // Act
-      const action = async () => TppConsents.forwardTppConsents(...options)
+      const action = async () => TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
-      await expect(action()).rejects.toThrow(/No FSPIOP_CALLBACK_URL_TPP_REQ_SERVICE endpoint found for tppConsents/)
+      await expect(action()).rejects.toThrow(/No FSPIOP_CALLBACK_URL_TPP_REQ_SERVICE endpoint found for tppConsentRequest/)
     })
 
     it('handles when the the request fails', async () => {
@@ -116,16 +191,16 @@ describe('tppConsents', () => {
       sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
       sandbox.stub(Request, 'sendRequest').throws(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR, 'Failed to send HTTP request to host', new Error(), '', [{ key: 'cause', value: {} }]))
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_POST,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_POST,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'post',
         { ID: '12345' },
-        { consentId: '12345' },
+        { consentRequestId: '12345' },
         SpanMock
       ]
 
       // Act
-      const action = async () => TppConsents.forwardTppConsents(...options)
+      const action = async () => TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
       await expect(action()).rejects.toThrow(/Failed to send HTTP request to host/)
@@ -140,7 +215,7 @@ describe('tppConsents', () => {
         statusText: 'Accepted'
       })
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_GET,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_GET,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'get',
         { },
@@ -149,7 +224,7 @@ describe('tppConsents', () => {
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsents(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
       expect(result).toBe(true)
@@ -164,15 +239,15 @@ describe('tppConsents', () => {
         statusText: 'Accepted'
       })
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_GET,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_GET,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'get',
         { ID: '1234' },
-        { consentId: '12345' }
+        { consentRequestId: '12345' }
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsents(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
       expect(result).toBe(true)
@@ -182,25 +257,25 @@ describe('tppConsents', () => {
       // Arrange
       sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
       sandbox.stub(Request, 'sendRequest').throws(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR, 'Failed to send HTTP request to host', new Error(), '', [{ key: 'cause', value: {} }]))
-      sandbox.stub(TppConsents, 'forwardTppConsentsError').resolves(true)
+      sandbox.stub(TppConsentRequests, 'forwardTppConsentRequestsError').resolves(true)
       const options = [
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_POST,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_POST,
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         'post',
         { ID: '12345' },
-        { consentId: '12345' }
+        { consentRequestId: '12345' }
       ]
 
       // Act
-      const action = async () => TppConsents.forwardTppConsents(...options)
+      const action = async () => TppConsentRequests.forwardTppConsentRequests(...options)
 
       // Assert
       await expect(action()).rejects.toThrow(/Failed to send HTTP request to host/)
     })
   })
 
-  describe('forwardTppConsentsError', () => {
-    it('sends the error request ', async () => {
+  describe('forwardTppConsentRequestsError', () => {
+    it('sends the error request', async () => {
       // Arrange
       sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
       sandbox.stub(Request, 'sendRequest').resolves({
@@ -211,7 +286,7 @@ describe('tppConsents', () => {
       const options = [
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         Enum.Http.Headers.FSPIOP.SOURCE,
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_PUT_ERROR,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
         Enum.Http.RestMethods.PUT,
         '12345',
         ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, 'Could not find endpoint'),
@@ -219,7 +294,7 @@ describe('tppConsents', () => {
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsentsError(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequestsError(...options)
 
       // Assert
       expect(result).toBe(true)
@@ -236,7 +311,7 @@ describe('tppConsents', () => {
       const options = [
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         Enum.Http.Headers.FSPIOP.SOURCE,
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_PUT_ERROR,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
         Enum.Http.RestMethods.PUT,
         '12345',
         undefined,
@@ -244,13 +319,13 @@ describe('tppConsents', () => {
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsentsError(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequestsError(...options)
 
       // Assert
       expect(result).toBe(true)
     })
 
-    it('handles a missing consentId', async () => {
+    it('handles a missing consentRequestId', async () => {
       // Arrange
       sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
       sandbox.stub(Request, 'sendRequest').resolves({
@@ -261,7 +336,7 @@ describe('tppConsents', () => {
       const options = [
         TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
         Enum.Http.Headers.FSPIOP.SOURCE,
-        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENTS_PUT_ERROR,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
         Enum.Http.RestMethods.PUT,
         undefined,
         undefined,
@@ -269,10 +344,80 @@ describe('tppConsents', () => {
       ]
 
       // Act
-      const result = await TppConsents.forwardTppConsentsError(...options)
+      const result = await TppConsentRequests.forwardTppConsentRequestsError(...options)
 
       // Assert
       expect(result).toBe(true)
+    })
+
+    it('handles when span is undefined', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
+      sandbox.stub(Request, 'sendRequest').resolves({
+        ok: true,
+        status: 202,
+        statusText: 'Accepted'
+      })
+      const options = [
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        Enum.Http.Headers.FSPIOP.SOURCE,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
+        Enum.Http.RestMethods.PUT,
+        '12345',
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, 'Could not find endpoint')
+      ]
+
+      // Act
+      const result = await TppConsentRequests.forwardTppConsentRequestsError(...options)
+
+      // Assert
+      expect(result).toBe(true)
+    })
+
+    it('handles when the endpoint could not be found', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves(undefined)
+      sandbox.stub(Request, 'sendRequest').resolves({
+        ok: true,
+        status: 202,
+        statusText: 'Accepted'
+      })
+      const options = [
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        Enum.Http.Headers.FSPIOP.SOURCE,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
+        Enum.Http.RestMethods.PUT,
+        '12345',
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, 'Could not find endpoint'),
+        SpanMock
+      ]
+
+      // Act
+      const action = async () => TppConsentRequests.forwardTppConsentRequestsError(...options)
+
+      // Assert
+      await expect(action()).rejects.toThrow(/No FSPIOP_CALLBACK_URL_TPP_REQ_SERVICE endpoint found for tppConsentRequest/)
+    })
+
+    it('handles when the request fails', async () => {
+      // Arrange
+      sandbox.stub(Endpoint, 'getEndpoint').resolves('http://localhost:3000')
+      sandbox.stub(Request, 'sendRequest').throws(ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_COMMUNICATION_ERROR, 'Failed to send HTTP request to host', new Error(), '', [{ key: 'cause', value: {} }]))
+      const options = [
+        TestHelper.defaultHeaders(resource, Config.PROTOCOL_VERSIONS),
+        Enum.Http.Headers.FSPIOP.SOURCE,
+        Enum.EndPoints.FspEndpointTemplates.TPP_CONSENT_REQUEST_PUT_ERROR,
+        Enum.Http.RestMethods.PUT,
+        '12345',
+        ErrorHandler.Factory.createFSPIOPError(ErrorHandler.Enums.FSPIOPErrorCodes.DESTINATION_FSP_ERROR, 'Could not find endpoint'),
+        SpanMock
+      ]
+
+      // Act
+      const action = async () => TppConsentRequests.forwardTppConsentRequestsError(...options)
+
+      // Assert
+      await expect(action()).rejects.toThrow(/Failed to send HTTP request to host/)
     })
   })
 })

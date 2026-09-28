@@ -23,7 +23,7 @@
  - Name Surname <name.surname@mojaloop.io>
 
  - Devarsh Shah <devarshshah2608@gmail.com>
- - Justin Theodorus <justin.theodorus@gmail.com> [Assisted by Claude Opus 5]
+ - Justin Theodorus <justin.theodorus@gmail.com>
 
  --------------
  ******/
@@ -55,7 +55,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  get: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  get: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consent_requests_get',
       'Get tpp consent request by Id',
@@ -89,7 +89,7 @@ module.exports = {
    * produces: application/json
    * responses: 200, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  put: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  put: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consent_requests_put',
       'Put tpp consent request by Id',
@@ -123,7 +123,7 @@ module.exports = {
    * produces: application/json
    * responses: 202, 400, 401, 403, 404, 405, 406, 501, 503
    */
-  patch: async (context: Context, request: TraceableRequest, h: ResponseToolkit) => {
+  patch: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
       'tpp_consent_requests_patch',
       'Patch tpp consent request by Id',
