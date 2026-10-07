@@ -56,7 +56,7 @@ module.exports = {
      */
   put: async (_context: Context, request: TraceableRequest, h: ResponseToolkit) => {
     const histTimerEnd = Metrics.getHistogram(
-      'tpp_account_request_error_put',
+      'tpp_accounts_requests_error_put',
       'Put tpp account Request error by Id',
       ['success']
     ).startTimer()
@@ -68,7 +68,7 @@ module.exports = {
         headers: request.headers,
         payload: request.payload
       }, EventSdk.AuditEventAction.start)
-      tppAccountsRequest.forwardTppAccountsRequestError(request.headers, request.headers['fspiop-destination'], Enum.EndPoints.FspEndpointTemplates.TPP_ACCOUNT_REQUEST_PUT_ERROR, Enum.Http.RestMethods.PUT, request.params.ID, request.payload, span).catch((err: Error) => {
+      tppAccountsRequest.forwardTppAccountsRequestError(request.headers, request.headers['fspiop-destination'], Enum.EndPoints.FspEndpointTemplates.TPP_ACCOUNTS_REQUEST_PUT_ERROR, Enum.Http.RestMethods.PUT, request.params.ID, request.payload, span).catch((err: Error) => {
         // Do nothing with the error - forwardTppAccountsRequestError takes care of async errors
         request.server.log(['error'], `ERROR - forwardTppAccountsRequestError: ${LibUtil.getStackOrInspect(err)}`)
       })
