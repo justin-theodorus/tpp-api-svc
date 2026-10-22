@@ -29,11 +29,9 @@
  ******/
 'use strict'
 
-import { type Request, type ResponseToolkit } from '@hapi/hapi'
+import { type ResponseToolkit } from '@hapi/hapi'
 import { type Context } from 'openapi-backend'
-import { type Span } from '@mojaloop/event-sdk'
-
-type TraceableRequest = Request & { span: Span }
+import { type TraceableRequest } from '../lib/types'
 
 const EventSdk = require('@mojaloop/event-sdk')
 const Enum = require('@mojaloop/central-services-shared').Enum
