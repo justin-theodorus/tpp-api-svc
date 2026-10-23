@@ -27,4 +27,9 @@
  --------------
  ******/
 
+import { type Request } from '@hapi/hapi'
+import { type Span } from '@mojaloop/event-sdk'
+
 export type FspiopHeaders = Record<string, string>
+
+export type TraceableRequest = Request & { span: Span }

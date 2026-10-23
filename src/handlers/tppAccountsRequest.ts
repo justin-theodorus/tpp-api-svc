@@ -29,14 +29,9 @@
  ******/
 'use strict'
 import { Enum } from '@mojaloop/central-services-shared';
-import { 
-  type Request,
-  type ResponseToolkit
-} from '@hapi/hapi';
-import {
-  type Span
-} from '@mojaloop/event-sdk';
+import { type ResponseToolkit } from '@hapi/hapi';
 import { type Context } from 'openapi-backend'
+import { type TraceableRequest } from '../lib/types'
 
 const EventSdk = require('@mojaloop/event-sdk')
 const ErrorHandler = require('@mojaloop/central-services-error-handling')
@@ -45,10 +40,9 @@ const Metrics = require('@mojaloop/central-services-metrics')
 const tppAccountsRequest = require('../domain/tppAccountsRequest')
 const LibUtil = require('../lib/util')
 
-type TraceableRequest = Request & { span: Span }
-
 // central-services-shared does not declare the TPP_* endpoint templates in its type
 // definitions, even though they are present at runtime.
+// TODO: remove once the service moves to central-services-shared 19, which declares them.
 type FspEndpointTemplatesWithTpp = typeof Enum.EndPoints.FspEndpointTemplates & {
   TPP_ACCOUNTS_REQUEST_POST: string
 }
